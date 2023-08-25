@@ -1,0 +1,8 @@
+---
+
+- name: Build a single node k3s cluster
+  hosts: rpi-node1
+  vars:
+    k3s_become: true
+  roles:
+    - role: xanmanning.k3s

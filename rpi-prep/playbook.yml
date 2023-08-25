@@ -1,0 +1,89 @@
+- hosts: all
+  become: yes
+  tasks:
+  - set_fact:
+      cmdline_txt_path: /boot/cmdline.txt
+
+  - include_tasks: cmdline.yml
+    vars:
+      key: cgroup_enable
+      value: memory
+      update: false
+
+  - include_tasks: cmdline.yml
+    vars:
+      key: cgroup_enable
+      value: cpu
+      update: false
+
+  - include_tasks: cmdline.yml
+    vars:
+      key: cgroup_memory
+      value: 1
+      update: true
+
+  - include_tasks: cmdline.yml
+    vars:
+      key: pci
+      value: pcie_bus_perf
+      update: false
+
+  - name: Creates an entry for resizing udp buffers (required by quic) 1
+    ansible.builtin.cron:
+      name: "resize read udp buffers on reboot"
+      special_time: reboot
+      job: "sysctl -w net.core.rmem_max=2500000"
+  
+  - name: Creates an entry for resizing udp buffers (required by quic) 2
+    ansible.builtin.cron:
+      name: "resize write udp buffers on reboot"
+      special_time: reboot
+      job: "sysctl -w net.core.wmem_max=2500000"
+
+  - name: CPU Frequency
+    lineinfile:
+      path: /boot/config.txt
+      regexp: '^arm_freq='
+      line: 'arm_freq=2100'
+
+  - name: GPU Frequency
+    lineinfile:
+      path: /boot/config.txt
+      regexp: '^gpu_freq='
+      line: 'gpu_freq=750'
+
+  - name: Over Voltage
+    lineinfile:
+      path: /boot/config.txt
+      regexp: '^over_voltage='
+      line: 'over_voltage=6'
+
+  - name: GPU Memory Split
+    lineinfile:
+      path: /boot/config.txt
+      regexp: '^gpu_mem='
+      line: 'gpu_mem=16'
+
+  - name: Boot Delay (disable)
+    lineinfile:
+      path: /boot/config.txt
+      regexp: '^boot_delay='
+      line: 'boot_delay=0'
+
+  - name: Disable splash screen
+    lineinfile:
+      path: /boot/config.txt
+      regexp: '^disable_splash='
+      line: 'disable_splash=1'
+
+  - name: Wait for automatic system updates
+    ansible.builtin.shell: while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 1; done;
+
+  - name: apt-get update && apt-get upgrade
+    ansible.builtin.apt:
+      upgrade: yes
+      update_cache: yes
+      cache_valid_time: 0
+
+  - name: reboot hosts
+    ansible.builtin.reboot:
