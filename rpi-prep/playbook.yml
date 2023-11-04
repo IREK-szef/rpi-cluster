@@ -85,14 +85,14 @@
       update_cache: yes
       cache_valid_time: 0
 
-  - name: Install pip
+  - name: Install open-iscsi
     ansible.builtin.apt:
-      name: pip
+      name: open-iscsi
       state: present
 
   - name: Install pyyaml python package
-    ansible.builtin.pip:
-      name: pyyaml
+    ansible.builtin.apt:
+      name: python3-yaml
 
   - name: reboot hosts
     ansible.builtin.reboot:
