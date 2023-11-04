@@ -85,5 +85,14 @@
       update_cache: yes
       cache_valid_time: 0
 
+  - name: Install pip
+    ansible.builtin.apt:
+      name: pip
+      state: present
+
+  - name: Install pyyaml python package
+    ansible.builtin.pip:
+      name: pyyaml
+
   - name: reboot hosts
     ansible.builtin.reboot:

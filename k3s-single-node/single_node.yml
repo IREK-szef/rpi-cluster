@@ -1,8 +1,12 @@
----
-
 - name: Build a single node k3s cluster
   hosts: rpi-node1
   vars:
     k3s_become: true
+    k3s_server:
+      disable:
+        - traefik
+        - coredns
+        - servicelb
+        - local-storage
   roles:
     - role: xanmanning.k3s
